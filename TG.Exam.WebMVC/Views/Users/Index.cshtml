@@ -1,0 +1,37 @@
+﻿<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+@model IEnumerable<TG.Exam.WebMVC.Models.User>
+
+@{
+    ViewBag.Title = "Users";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Users</h2>
+
+<p>
+    <button id="btnGetUsersAsync" class="btn btn-default" name="command" value="GetUsersAsync">GetUsersAsync</button>
+</p>
+
+
+<div id="PartialUsersList">
+    @{Html.RenderPartial("_UsersList");}
+</div>
+
+
+
+@section scripts {
+    <script type="text/javascript">
+        $('#btnGetUsersAsync').click(function () {
+            $.ajax({
+                url: '/Users/UpdateAsync',
+                type: 'GET',
+                cache: false,
+                async: true,
+                success: function (result) {
+                    $('#PartialUsersList').html(result);
+                }
+            });
+            return false;
+        });
+    </script>
+}

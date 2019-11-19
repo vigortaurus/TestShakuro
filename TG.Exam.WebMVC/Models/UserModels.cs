@@ -15,8 +15,10 @@ namespace TG.Exam.WebMVC.Models
         public string LastName { get; set; }
         [Display(Name = "Age")]
         public int Age { get; set; }
+        [Display(Name = "Sync/Async")]
+        public string SyncAsync { get; set; }
 
-        public override string ToString()
+      public override string ToString()
         {
             return String.Format("{0} {1} is {2} years old", this.FirstName, this.LastName, this.Age);
         }

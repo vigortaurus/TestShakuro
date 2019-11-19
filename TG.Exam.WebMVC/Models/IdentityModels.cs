@@ -13,5 +13,9 @@ namespace TG.Exam.WebMVC.Models
             : base("DefaultConnection")
         {
         }
-    }
+        public static ApplicationDbContext Create()
+        {
+           return new ApplicationDbContext();
+        }
+   }
 }

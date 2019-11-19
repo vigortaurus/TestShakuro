@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using TG.Exam.OOP;
 namespace TG.Exam.OOP
+
 {
     class Program
     {
         static void Main(string[] args)
         {
-            var objs = GetObjects();
-
+            var objs = GetObjects();         
             objs.ForEach(o =>
             {
                 Console.WriteLine("Object:\r\n{0}", o.ToString2());
@@ -19,7 +16,6 @@ namespace TG.Exam.OOP
 
             Console.ReadKey();
         }
-
         private static List<dynamic> GetObjects()
         {
             var objs = new List<dynamic>
@@ -51,5 +47,14 @@ namespace TG.Exam.OOP
 
             return objs;
         }
-    }
+   }
+    //Does not work for dynamic objects
+//    public static class ExtensionMethods
+//    {
+//       public static string ToString2(this object o)
+//       {
+//          return o.ToString();
+//       }
+//    }
+
 }

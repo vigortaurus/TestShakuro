@@ -9,96 +9,110 @@ using System.Threading.Tasks;
 
 namespace TG.Exam.SQL
 {
-    public class DAL
-    {
-        private SqlConnection GetConnection() 
-        {
-            var connectionString = ConfigurationManager.AppSettings["ConnectionString"];
+   public class DAL
+   {
+      private SqlConnection GetConnection()
+      {
+         var connectionString = ConfigurationManager.AppSettings["ConnectionString"];
 
-            var con = new SqlConnection(connectionString);
+         var con = new SqlConnection(connectionString);
 
-            con.Open();
+         con.Open();
 
-            return con;
-        }
+         return con;
+      }
 
-        private DataSet GetData(string sql)
-        {
-            var ds = new DataSet();
+      private DataSet GetData(string sql)
+      {
+         var ds = new DataSet();
 
-            using (var con = GetConnection())
+         using (var con = GetConnection())
+         {
+            using (var cmd = new SqlCommand(sql, con))
             {
-                using (var cmd = new SqlCommand(sql, con))
-                {
-                    using (var adp = new SqlDataAdapter(cmd))
-                    {
-                        adp.Fill(ds);
-                    }
-                }
+               using (var adp = new SqlDataAdapter(cmd))
+               {
+                  adp.Fill(ds);
+               }
             }
+         }
 
-            return ds;
-        }
+         return ds;
+      }
 
-        private void Execute(string sql)
-        {
-            using (var con = GetConnection())
+      private void Execute(string sql)
+      {
+         using (var con = GetConnection())
+         {
+            using (var cmd = new SqlCommand(sql, con))
             {
-                using (var cmd = new SqlCommand(sql, con))
-                {
-                    cmd.ExecuteNonQuery();
-                }
+               cmd.ExecuteNonQuery();
             }
-        }
+         }
+      }
 
-        public DataTable GetAllOrders()
-        {
-            var sql = String.Empty;
+      public DataTable GetAllOrders()
+      {
+         var sql = "SELECT OrderId, OrderCustomerId, OrderDate FROM Orders";
 
-            var ds = GetData(sql);
+         var ds = GetData(sql);
 
-            var result = ds.Tables.OfType<DataTable>().FirstOrDefault();
+         var result = ds.Tables.OfType<DataTable>().FirstOrDefault();
 
-            return result;
-        }
-        public DataTable GetAllOrdersWithCustomers()
-        {
-            var sql = String.Empty;
+         return result;
+      }
 
-            var ds = GetData(sql);
+      public DataTable GetAllOrdersWithCustomers()
+      {
+         var sql = $@"SELECT OrderId, OrderCustomerId ,OrderDate FROM [Orders]
+            where OrderCustomerId in (Select CustomerId from Customers)";
 
-            var result = ds.Tables.OfType<DataTable>().FirstOrDefault();
+         var ds = GetData(sql);
 
-            return result;
-        }
+         var result = ds.Tables.OfType<DataTable>().FirstOrDefault();
 
-        public DataTable GetAllOrdersWithPriceUnder(int price)
-        {
-            var sql = String.Empty;
+         return result;
+      }
 
-            var ds = GetData(sql);
+      public DataTable GetAllOrdersWithPriceUnder(int price)
+      {
+         var sql = $@"SELECT ORD.OrderId,ORD.OrderCustomerId, ORD.OrderDate, SUM(OI.[Count]) AS SumAmount,
+            SUM(OI.[Count] * IT.ItemPrice) as Total
+            FROM Orders AS ORD
+            inner join OrdersItems AS OI
+            ON ORD.OrderId = OI.OrderId
+            inner join Items as IT
+            ON OI.ItemId = IT.ItemId
+            Group by ORD.OrderId,ORD.OrderCustomerId, ORD.OrderDate
+            HAVING SUM(OI.[Count] * IT.ItemPrice) > {price}";
 
-            var result = ds.Tables.OfType<DataTable>().FirstOrDefault();
+         var ds = GetData(sql);
 
-            return result;
-        }
+         var result = ds.Tables.OfType<DataTable>().FirstOrDefault();
 
-        public void DeleteCustomer(int orderId)
-        {
-            var sql = String.Empty;
+         return result;
+      }
 
-            Execute(sql);
-        }
+      public void DeleteCustomer(int orderId)
+      {
+         var sql = $@"Delete From Customers where CustomerId in
+            (Select OrderCustomerId from Orders where OrderId = {orderId})";
 
-        internal DataTable GetAllItemsAndTheirOrdersCountIncludingTheItemsWithoutOrders()
-        {
-            var sql = String.Empty;
+         Execute(sql);
+      }
 
-            var ds = GetData(sql);
+      internal DataTable GetAllItemsAndTheirOrdersCountIncludingTheItemsWithoutOrders()
+      {
+         var sql = $@"SELECT it.ItemId, it.ItemName, it.ItemPrice, Isnull(oit.[Count],0) as [Count]
+                        FROM Items as it
+                        left join OrdersItems as oit
+                        on it.ItemId = oit.ItemId";
 
-            var result = ds.Tables.OfType<DataTable>().FirstOrDefault();
+         var ds = GetData(sql);
 
-            return result;
-        }
-    }
+         var result = ds.Tables.OfType<DataTable>().FirstOrDefault();
+
+         return result;
+      }
+   }
 }
